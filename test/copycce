@@ -1,0 +1,4 @@
+mount /dev/hdb1 ./img
+rm -rf ./img/usr/cce
+cp -rf /usr/cce ./img/usr
+umount ./img

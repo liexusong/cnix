@@ -1,0 +1,262 @@
+#### DEC VT52
+# (<acsc>/:ae:/:as: capabilities aren't in DEC's official entry -- esr)
+#
+# Actually (TD pointed this out at the time the acsc string was added):
+# vt52 shouldn't define full acsc since most of the cells don't match.
+# see vt100 manual page A-31.  This is the list that does match:
+#	f degree
+#	g plus/minus
+#	h right-arrow
+#	k down-arrow
+#	m scan-1
+#	o scan-3
+#	q scan-5
+#	s scan-7
+# The line-drawing happens to work in several terminal emulators, but should
+# not be used as a guide to the capabilities of the vt52.  Note in particular
+# that vt52 does not support line-drawing characters (the scan-X values refer
+# to a crude plotting feature) -TD
+vt52|dec vt52:\
+	:bs:\
+	:co#80:it#8:li#24:\
+	:ac=ffgghhompoqqss.k:ae=\EG:as=\EF:bl=^G:cd=\EJ:ce=\EK:\
+	:cl=\EH\EJ:cm=\EY%+ %+ :cr=^M:do=\EB:ho=\EH:kb=^H:kd=\EB:\
+	:kl=\ED:kr=\EC:ku=\EA:le=\ED:nd=\EC:nw=^M^J:sf=^J:sr=\EI:\
+	:ta=^I:up=\EA:
+
+#### DEC VT100 and compatibles
+#
+# DEC terminals from the vt100 forward are collected here. Older DEC terminals
+# and micro consoles can be found in the `obsolete' section.  More details on
+# the relationship between the VT100 and ANSI X3.64/ISO 6429/ECMA-48 may be
+# found near the end of this file.
+#
+# Except where noted, these entries are DEC's official terminfos.
+# Contact Bill Hedberg <hedberg@hannah.enet.dec.com> of Terminal Support
+# Engineering for more information.  Updated terminfos and termcaps
+# are kept available at ftp://gatekeeper.dec.com/pub/DEC/termcaps.
+#
+# In October 1995 DEC sold its terminals business, including the VT and Dorio
+# line and trademark, to SunRiver Data Systems.  SunRiver has since changed
+# its name to Boundless Technologies; see http://www.boundless.com.
+#
+
+# NOTE:  Any VT100 emulation, whether in hardware or software, almost
+# certainly includes what DEC called the `Level 1 editing extension' codes;
+# only the very oldest VT100s lacked these and there probably aren't any of
+# those left alive.  To capture these, use one of the VT102 entries.
+#
+# Note that the :xn: glitch in vt100 is not quite the same as on the Concept,
+# since the cursor is left in a different position while in the
+# weird state (concept at beginning of next line, vt100 at end
+# of this line) so all versions of vi before 3.7 don't handle
+# :xn: right on vt100. The correct way to handle :xn: is when
+# you output the char in column 80, immediately output CR LF
+# and then assume you are in column 1 of the next line. If :xn:
+# is on, am should be on too.
+#
+# I assume you have smooth scroll off or are at a slow enough baud
+# rate that it doesn't matter (1200? or less). Also this assumes
+# that you set auto-nl to "on", if you set it off use vt100-nam
+# below.
+#
+# The padding requirements listed here are guesses. It is strongly
+# recommended that xon/xoff be enabled, as this is assumed here.
+#
+# The vt100 uses <rs2> and <rf> rather than :is:/:ct:/:st: because the
+# tab settings are in non-volatile memory and don't need to be
+# reset upon login. Also setting the number of columns glitches
+# the screen annoyingly. You can type "reset" to get them set.
+#
+# The VT100 series terminals have cursor ("arrows") keys which can operate
+# in two different modes: Cursor Mode and Application Mode.  Cursor Mode
+# is the reset state, and is assumed to be the normal state.  Application
+# Mode is the "set" state.  In Cursor Mode, the cursor keys transmit
+# "Esc [ {code}" sequences, conforming to ANSI standards.  In Application
+# Mode, the cursor keys transmit "Esc O <code>" sequences.  Application Mode
+# was provided primarily as an aid to the porting of VT52 applications.  It is
+# assumed that the cursor keys are normally in Cursor Mode, and expected that
+# applications such as vi will always transmit the :ks: string.  Therefore,
+# the definitions for the cursor keys are made to match what the terminal
+# transmits after the :ks: string is transmitted.  If the :ks: string
+# is a null string or is not defined, then cursor keys are assumed to be in
+# "Cursor Mode", and the cursor keys definitions should match that assumption,
+# else the application may fail.  It is also expected that applications will
+# always transmit the :ke: string to the terminal before they exit.
+#
+# The VT100 series terminals have an auxiliary keypad, commonly referred to as
+# the "Numeric Keypad", because it is a cluster of numeric and function keys.
+# The Numeric Keypad which can operate in two different modes: Numeric Mode and
+# Application Mode.  Numeric Mode is the reset state, and is assumed to be
+# the normal state.  Application Mode is the "set" state.  In Numeric Mode,
+# the numeric and punctuation keys transmit ASCII 7-bit characters, and the
+# Enter key transmits the same as the Return key (Note: the Return key
+# can be configured to send either LF (\015) or CR LF).  In Application Mode,
+# all the keypad keys transmit "Esc O {code}" sequences.  The PF1 - PF4 keys
+# always send the same "Esc O {code}" sequences.  It is assumed that the keypad
+# is normally in Numeric Mode.  If an application requires that the keypad be
+# in Application Mode then it is expected that the user, or the application,
+# will set the TERM environment variable to point to a terminfo entry which has
+# defined the :ks: string to include the codes that switch the keypad into
+# Application Mode, and the terminfo entry will also define function key
+# fields to match the Application Mode control codes.  If the :ks: string
+# is a null string or is not defined, then the keypad is assumed to be in
+# Numeric Mode.  If the :ks: string switches the keypad into Application
+# Mode, it is expected that the :ke: string will contain the control codes
+# necessary to reset the keypad to "Normal" mode, and it is also expected that
+# applications which transmit the :ks: string will also always transmit the
+# :ke: string to the terminal before they exit.
+#
+# Here's a diagram of the VT100 keypad keys with their bindings.
+# The top line is the name of the key (some DEC keyboards have the keys
+# labelled somewhat differently, like GOLD instead of PF1, but this is
+# the most "official" name).  The second line is the escape sequence it
+# generates in Application Keypad mode (where "$" means the ESC
+# character).  The third line contains two items, first the mapping of
+# the key in terminfo, and then in termcap.
+#   _______________________________________
+#  |   PF1   |   PF2   |   PF3   |   PF4   |
+#  |   $OP   |   $OQ   |   $OR   |   $OS   |
+#  |_kf1__k1_|_kf2__k2_|_kf3__k3_|_kf4__k4_|
+#  |    7         8         9         -    |
+#  |   $Ow   |   $Ox   |   $Oy   |   $Om   |
+#  |_kf9__k9_|_kf10_k;_|_kf0__k0_|_________|
+#  |    4    |    5    |    6    |    ,    |
+#  |   $Ot   |   $Ou   |   $Ov   |   $Ol   |
+#  |_kf5__k5_|_kf6__k6_|_kf7__k7_|_kf8__k8_|
+#  |    1    |    2    |    3    |         |
+#  |   $Oq   |   $Or   |   $Os   |  enter  |
+#  |_ka1__K1_|_kb2__K2_|_ka3__K3_|  $OM    |
+#  |         0         |   .     |         |
+#  |        $Op        |  $On    |         |
+#  |___kc1_______K4____|_kc3__K5_|_kent_@8_|
+#
+# Note however, that the arrangement of the 5-key ka1-kc3 do not follow the
+# terminfo guidelines.  That is a compromise used to assign the remaining
+# keys on the keypad to kf5-kf0, used on older systems with legacy termcap
+# support:
+vt100+keypad|dec vt100 numeric keypad no fkeys:\
+	:K1=\E[H:K2=\E[r:K3=\E[V:K4=\E[Y:K5=\E[U:
+vt100+pfkeys|dec vt100 numeric keypad:\
+	:@8=\E[M:k1=\E[[A:k2=\E[[B:k3=\E[[C:k4=\E[[D:tc=vt100+keypad:
+vt100+fnkeys|dec vt100 numeric keypad:\
+	:k0=\E[y:k5=\E[[E:k6=\E[[F:k7=\E[[G:k8=\E[[H:k9=\E[[I:k;=\E[[J:\
+	:tc=vt100+pfkeys:
+#
+# A better adaptation to modern keyboards such as the PC's, which have a dozen
+# function keys and the keypad 2,4,6,8 keys are labeled with arrows keys, is to
+# use the 5-key arrangement to model the arrow keys as suggested in the
+# terminfo guidelines:
+#   _______________________________________
+#  |   PF1   |   PF2   |   PF3   |   PF4   |
+#  |   $OP   |   $OQ   |   $OR   |   $OS   |
+#  |_kf1__k1_|_kf2__k2_|_kf3__k3_|_kf4__k4_|
+#  |    7         8         9         -    |
+#  |   $Ow   |   $Ox   |   $Oy   |   $Om   |
+#  |_ka1__K1_|_________|_ka3__K3_|_________|
+#  |    4    |    5    |    6    |    ,    |
+#  |   $Ot   |   $Ou   |   $Ov   |   $Ol   |
+#  |_________|_kb2__K2_|_________|_________|
+#  |    1    |    2    |    3    |         |
+#  |   $Oq   |   $Or   |   $Os   |  enter  |
+#  |_kc1__K4_|_________|_kc3__K5_|  $OM    |
+#  |         0         |   .     |         |
+#  |        $Op        |  $On    |         |
+#  |___________________|_________|_kent_@8_|
+#
+vt220+keypad|dec vt220 numeric keypad:\
+	:@8=\EOM:K1=\EOw:K2=\EOu:K3=\EOy:K4=\EOq:K5=\EOs:k1=\EOP:\
+	:k2=\EOQ:k3=\EOR:k4=\EOS:
+#
+vt100+enq|ncurses extension for vt100-style ENQ:\
+	:u8=\E[?1;2c:tc=ansi+enq:
+vt102+enq|ncurses extension for vt102-style ENQ:\
+	:u8=\E[?6c:tc=ansi+enq:
+#
+# And here, for those of you with orphaned VT100s lacking documentation, is
+# a description of the soft switches invoked when you do `Set Up'.
+#
+#  Scroll 0-Jump               Shifted 3   0-#
+#  |      1-Smooth             |           1-British pound sign
+#  | Autorepeat 0-Off          | Wrap Around 0-Off
+#  | |          1-On           | |           1-On
+#  | | Screen 0-Dark Bkg       | | New Line 0-Off
+#  | | |      1-Light Bkg      | | |        1-On
+#  | | | Cursor 0-Underline    | | | Interlace 0-Off
+#  | | | |      1-Block        | | | |         1-On
+#  | | | |                     | | | |
+#  1 1 0 1       1 1 1 1       0 1 0 0       0 0 1 0       <--Standard Settings
+#                | | | |                     | | | |
+#                | | | Auto XON/XOFF 0-Off   | | | Power 0-60 Hz
+#                | | |               1-On    | | |       1-50 Hz
+#                | | Ansi/VT52 0-VT52        | | Bits Per Char. 0-7 Bits
+#                | |           1-ANSI        | |                1-8 Bits
+#                | Keyclick 0-Off            | Parity 0-Off
+#                |          1-On             |        1-On
+#                Margin Bell 0-Off           Parity Sense 0-Odd
+#                            1-On                         1-Even
+#
+# The following SET-UP modes are assumed for normal operation:
+#	ANSI_MODE	AUTO_XON/XOFF_ON	NEWLINE_OFF	80_COLUMNS
+#	WRAP_AROUND_ON  JUMP_SCROLL_OFF
+# Other SET-UP modes may be set for operator convenience or communication
+# requirements; I recommend
+#	AUTOREPEAT_ON	BLOCK_CURSOR	MARGIN_BELL_OFF    SHIFTED_3_#
+# Unless you have a graphics add-on such as Digital Engineering's VT640
+# (and even then, whenever it can be arranged!) you should set
+#	INTERLACE_OFF
+#
+# (vt100: I added <rmam>/<smam> based on the init string, also :bs:. -- esr)
+vt100|vt100-am|dec vt100 (w/advanced video):\
+	:5i:am:bs:ms:xn:xo:\
+	:co#80:it#8:li#24:vt#3:\
+	:DO=\E[%dB:LE=\E[%dD:RA=\E[?7l:RI=\E[%dC:SA=\E[?7h:\
+	:UP=\E[%dA:\
+	:ac=``aaffggjjkkllmmnnooppqqrrssttuuvvwwxxyyzz{{||}}~~:\
+	:ae=^O:as=^N:bl=^G:cb=\E[1K:cd=\E[J:ce=\E[K:cl=\E[H\E[J:\
+	:cm=\E[%i%d;%dH:cr=^M:cs=\E[%i%d;%dr:ct=\E[3g:do=^J:\
+	:eA=\E(B\E)0:ho=\E[H:kb=^H:kd=\E[B:ke=\E[?1l\E>:kl=\E[D:\
+	:kr=\E[C:ks=\E[?1h\E=:ku=\E[A:l1=pf1:l2=pf2:l3=pf3:l4=pf4:\
+	:le=^H:mb=\E[5m:md=\E[1m:me=\E[0m:mr=\E[7m:nd=\E[C:\
+	:pf=\E[4i:po=\E[5i:ps=\E[0i:rc=\E8:\
+	:rs=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h:sc=\E7:se=\E[m:\
+	:sf=^J:so=\E[7m:sr=\EM:st=\EH:ta=^I:ue=\E[m:up=\E[A:\
+	:Co#8:AB=\E[4%dm:AF=\E[3%dm:\
+	:us=\E[4m:tc=vt100+fnkeys:
+vt100nam|vt100-nam|vt100 no automargins:\
+	:am@:xn@:tc=vt100-am:
+vt100-vb|dec vt100 (w/advanced video) & no beep:\
+	:bl@:vb=\E[?5h\E[?5l:tc=vt100:
+
+# Ordinary vt100 in 132 column ("wide") mode.
+vt100-w|vt100-w-am|dec vt100 132 cols (w/advanced video):\
+	:co#132:li#24:\
+	:rs=\E>\E[?3h\E[?4l\E[?5l\E[?8h:tc=vt100-am:
+vt100-w-nam|vt100-nam-w|dec vt100 132 cols (w/advanced video no automargin):\
+	:co#132:li#14:vt@:\
+	:rs=\E>\E[?3h\E[?4l\E[?5l\E[?8h:tc=vt100-nam:
+
+# vt100 with no advanced video.
+vt100-nav|vt100 without advanced video option:\
+	:sg#1:\
+	:mb@:md@:me@:mr@:sa@:se=\E[m:so=\E[7m:ue@:us@:tc=vt100:
+vt100-nav-w|vt100-w-nav|dec vt100 132 cols 14 lines (no advanced video option):\
+	:co#132:li#14:tc=vt100-nav:
+
+# vt100 with one of the 24 lines used as a status line.
+# We put the status line on the top.
+vt100-s|vt100-s-top|vt100-top-s|vt100 for use with top sysline:\
+	:es:hs:\
+	:li#23:\
+	:cl=\E[2;1H\E[J:cm=\E[%i%+^A;%dH:cs=\E[%i%i%d;%dr:\
+	:ds=\E7\E[1;24r\E8:fs=\E8:ho=\E[2;1H:is=\E7\E[2;24r\E8:\
+	:ts=\E7\E[1;%dH\E[1K:tc=vt100-am:
+
+# Status line at bottom.
+# Clearing the screen will clobber status line.
+vt100-s-bot|vt100-bot-s|vt100 for use with bottom sysline:\
+	:es:hs:\
+	:li#23:\
+	:ds=\E7\E[1;24r\E8:fs=\E8:is=\E[1;23r\E[23;1H:\
+	:ts=\E7\E[24;%dH\E[1K:tc=vt100-am:
+

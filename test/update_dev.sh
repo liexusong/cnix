@@ -1,0 +1,16 @@
+mknod ./img/dev/tty c 5 0
+mknod ./img/dev/tty0 c 5 1
+mknod ./img/dev/console c 5 1
+mknod ./img/dev/tty1 c 5 2
+mknod ./img/dev/ptyp0 c 5 3
+mknod ./img/dev/ttyp0 c 5 4
+mknod ./img/dev/ptyp1 c 5 5
+mknod ./img/dev/ttyp1 c 5 6
+mknod ./img/dev/hd   b 3 0
+mknod ./img/dev/hd0  b 3 1
+mknod ./img/dev/hd1  b 3 2
+mknod ./img/dev/hd2  b 3 3
+mknod ./img/dev/hd3  b 3 4
+mknod ./img/dev/mem c 1 1
+mknod ./img/dev/null c 1 3
+mknod ./img/dev/zero c 1 5

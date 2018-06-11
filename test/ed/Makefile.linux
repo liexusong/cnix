@@ -1,0 +1,15 @@
+CC = gcc
+CFLAGS = -Wall
+LD = ld
+
+OBJS = screen.o tetris.o input.o utils.o
+
+tetris:	$(OBJS)
+	$(CC) -o $@ $^
+	objdump -d $@ > $@.S
+
+%c%.o:
+	$(CC) $(CFLAGS) -c -o $@ $< 
+
+clean:
+	rm -f *.o $(OBJS) tetris *.~* a.out

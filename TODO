@@ -1,0 +1,10 @@
+TODO:
+  1. add copy-on-write support.
+  2. deal with all kinds of page exception.
+  3. gdb support.
+  4. unicode support in kernel, chinese language support, graphic interface support.
+  5. fsck£¬use source code from minix.
+  6. mount syscall£¬mount command, fdisk command.
+  7. coredump file.
+  8. support harddisk size over 4G.
+  9. test cnix under real machine.

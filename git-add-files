@@ -1,0 +1,1 @@
+git-status|egrep -o "modified:   .+"|cut -c13-|xargs git-add
